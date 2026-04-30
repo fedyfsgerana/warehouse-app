@@ -8,21 +8,12 @@ export default {
         sans: ["Plus Jakarta Sans", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
-      colors: {
-        primary: {
-          50: "#eff6ff",
-          100: "#dbeafe",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-        },
-      },
-      borderRadius: {
-        xl: "12px",
-        "2xl": "16px",
-        "3xl": "20px",
-      },
     },
   },
-  plugins: [],
+  plugins: [require("daisyui")],
+  daisyui: {
+    themes: false,
+    darkTheme: "dark",
+    base: false,
+  },
 };

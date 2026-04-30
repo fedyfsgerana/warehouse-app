@@ -1,49 +1,79 @@
 <template>
-    <div class="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Warehouse MS</h2>
-            <p class="text-gray-500 mb-6">Silakan login untuk melanjutkan</p>
+    <div class="flex items-center justify-center min-h-screen" style="background-color: var(--color-bg);">
+        <div class="w-full max-w-md px-4">
 
-            <div v-if="authStore.error" class="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">
-                {{ authStore.error }}
+            <div class="flex flex-col items-center mb-8">
+                <div class="flex items-center justify-center mb-4 text-2xl font-black text-white w-14 h-14 rounded-2xl"
+                    style="background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));">
+                    W
+                </div>
+                <h1 class="text-2xl font-bold" style="color: var(--color-text);">Warehouse MS</h1>
+                <p class="mt-1 text-sm" style="color: var(--color-text-muted);">Silakan login untuk melanjutkan</p>
             </div>
 
-            <form @submit.prevent="handleLogin" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input v-model="form.email" type="email" placeholder="admin@warehouse.com"
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        required />
+            <div class="card">
+
+                <div v-if="authStore.error" role="alert" class="mb-6 alert alert-error">
+                    <AlertCircle :size="16" />
+                    <span class="text-sm">{{ authStore.error }}</span>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input v-model="form.password" type="password" placeholder="password"
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        required />
+                <div class="mb-4 form-control">
+                    <label class="label">
+                        <span class="font-semibold label-text" style="color: var(--color-text-muted);">EMAIL</span>
+                    </label>
+                    <label class="flex items-center gap-2 input input-bordered"
+                        style="background-color: var(--color-surface-2); border-color: var(--color-border);">
+                        <Mail :size="15" style="color: var(--color-text-muted);" />
+                        <input v-model="form.email" type="email" placeholder="admin@warehouse.com" class="text-sm grow"
+                            style="background: transparent; color: var(--color-text);" @keyup.enter="handleLogin" />
+                    </label>
                 </div>
 
-                <button type="submit" :disabled="authStore.loading"
-                    class="w-full bg-primary-600 text-white py-2.5 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50">
+                <div class="mb-6 form-control">
+                    <label class="label">
+                        <span class="font-semibold label-text" style="color: var(--color-text-muted);">PASSWORD</span>
+                    </label>
+                    <label class="flex items-center gap-2 input input-bordered"
+                        style="background-color: var(--color-surface-2); border-color: var(--color-border);">
+                        <Lock :size="15" style="color: var(--color-text-muted);" />
+                        <input v-model="form.password" :type="showPassword ? 'text' : 'password'" placeholder="Password"
+                            class="text-sm grow" style="background: transparent; color: var(--color-text);"
+                            @keyup.enter="handleLogin" />
+                        <button @click="showPassword = !showPassword" type="button">
+                            <Eye v-if="!showPassword" :size="15" style="color: var(--color-text-muted);" />
+                            <EyeOff v-else :size="15" style="color: var(--color-text-muted);" />
+                        </button>
+                    </label>
+                </div>
+
+                <button @click="handleLogin" :disabled="authStore.loading" class="w-full btn btn-primary">
+                    <span v-if="authStore.loading" class="loading loading-spinner loading-sm"></span>
+                    <LogIn v-else :size="16" />
                     {{ authStore.loading ? 'Memproses...' : 'Login' }}
                 </button>
-            </form>
+
+            </div>
+
+            <p class="mt-6 text-xs text-center" style="color: var(--color-text-muted);">
+                Warehouse MS &copy; {{ year }}
+            </p>
         </div>
     </div>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import { Mail, Lock, LogIn, Eye, EyeOff, AlertCircle } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const showPassword = ref(false)
+const year = new Date().getFullYear()
 
-const form = reactive({
-    email: '',
-    password: ''
-})
+const form = reactive({ email: '', password: '' })
 
 const handleLogin = async () => {
     try {
