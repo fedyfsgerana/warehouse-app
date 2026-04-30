@@ -1,16 +1,18 @@
 <template>
     <div>
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Sales Order</h2>
-            <button @click="openModal()"
-                class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
+            <div>
+                <h2 class="text-2xl font-bold" style="color: var(--color-text);">Sales Order</h2>
+                <p class="mt-1 text-sm" style="color: var(--color-text-muted);">Kelola penjualan dan pengiriman</p>
+            </div>
+            <button @click="openModal()" class="btn-primary">
+                <Plus :size="16" />
                 Buat SO
             </button>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
-            <select v-model="filterStatus" @change="fetchSO"
-                class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <div class="mb-6 card">
+            <select v-model="filterStatus" @change="fetchSO" class="input" style="width: 200px;">
                 <option value="">Semua Status</option>
                 <option value="draft">Draft</option>
                 <option value="confirmed">Confirmed</option>
@@ -19,129 +21,196 @@
             </select>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div v-if="loading" class="p-8 text-center text-gray-400">Memuat...</div>
-            <table v-else class="w-full text-sm">
-                <thead class="bg-gray-50">
-                    <tr class="text-left text-gray-500">
-                        <th class="px-6 py-3">No. SO</th>
-                        <th class="px-6 py-3">Tujuan</th>
-                        <th class="px-6 py-3">Status</th>
-                        <th class="px-6 py-3">Tracking</th>
-                        <th class="px-6 py-3">Dibuat Oleh</th>
-                        <th class="px-6 py-3">Tanggal</th>
-                        <th class="px-6 py-3">Aksi</th>
+        <div class="table-container">
+            <div v-if="loading" class="p-8 text-sm text-center" style="color: var(--color-text-muted);">Memuat...</div>
+            <table v-else class="w-full">
+                <thead>
+                    <tr>
+                        <th class="table-header">No. SO</th>
+                        <th class="table-header">Tujuan</th>
+                        <th class="table-header">Status</th>
+                        <th class="table-header">Tracking</th>
+                        <th class="table-header">Dibuat Oleh</th>
+                        <th class="table-header">Tanggal</th>
+                        <th class="table-header">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="salesOrders.length === 0">
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-400">Belum ada sales order.</td>
+                        <td colspan="7" class="table-cell text-center" style="color: var(--color-text-muted);">Belum ada
+                            sales order.</td>
                     </tr>
-                    <tr v-for="so in salesOrders" :key="so.id" class="border-t hover:bg-gray-50">
-                        <td class="px-6 py-3 font-medium">{{ so.so_number }}</td>
-                        <td class="px-6 py-3">{{ so.destination || '-' }}</td>
-                        <td class="px-6 py-3">
-                            <span :class="statusClass(so.status)"
-                                class="px-2 py-0.5 rounded-full text-xs font-medium capitalize">
-                                {{ so.status }}
+                    <tr v-for="so in salesOrders" :key="so.id" class="table-row">
+                        <td class="table-cell">
+                            <span class="px-2 py-1 font-mono text-xs rounded-lg"
+                                style="background-color: var(--color-surface-2); color: var(--color-text);">
+                                {{ so.so_number }}
                             </span>
                         </td>
-                        <td class="px-6 py-3 text-gray-500">{{ so.tracking_number || '-' }}</td>
-                        <td class="px-6 py-3 text-gray-500">{{ so.created_by_name }}</td>
-                        <td class="px-6 py-3 text-gray-500">{{ formatDate(so.created_at) }}</td>
-                        <td class="px-6 py-3 flex gap-2">
-                            <button @click="openDetail(so.id)" class="text-primary-600 hover:underline">Detail</button>
-                            <button v-if="(authStore.isAdmin || authStore.isManager) && so.status === 'draft'"
-                                @click="handleConfirm(so.id)" class="text-yellow-600 hover:underline">
-                                Konfirmasi
-                            </button>
-                            <button v-if="(authStore.isAdmin || authStore.isManager) && so.status === 'confirmed'"
-                                @click="openShip(so)" class="text-green-600 hover:underline">
-                                Kirim
-                            </button>
+                        <td class="table-cell" style="color: var(--color-text);">{{ so.destination || '-' }}</td>
+                        <td class="table-cell">
+                            <span class="badge" :style="statusClass(so.status)">{{ so.status }}</span>
+                        </td>
+                        <td class="table-cell">
+                            <span v-if="so.tracking_number" class="px-2 py-1 font-mono text-xs rounded-lg"
+                                style="background-color: var(--color-surface-2); color: var(--color-text-muted);">
+                                {{ so.tracking_number }}
+                            </span>
+                            <span v-else style="color: var(--color-text-muted);">-</span>
+                        </td>
+                        <td class="table-cell" style="color: var(--color-text-muted);">{{ so.created_by_name }}</td>
+                        <td class="table-cell" style="color: var(--color-text-muted);">{{ formatDate(so.created_at) }}
+                        </td>
+                        <td class="table-cell">
+                            <div class="flex items-center gap-2">
+                                <button @click="openDetail(so.id)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                    style="background-color: var(--color-surface-2); color: var(--color-text);">
+                                    <Eye :size="12" />
+                                    Detail
+                                </button>
+                                <button v-if="(authStore.isAdmin || authStore.isManager) && so.status === 'draft'"
+                                    @click="handleConfirm(so.id)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                    style="background-color: rgba(245,158,11,0.1); color: var(--color-warning);">
+                                    <CheckCircle :size="12" />
+                                    Konfirmasi
+                                </button>
+                                <button v-if="(authStore.isAdmin || authStore.isManager) && so.status === 'confirmed'"
+                                    @click="openShip(so)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                    style="background-color: rgba(16,185,129,0.1); color: var(--color-success);">
+                                    <Truck :size="12" />
+                                    Kirim
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl">
-                <h3 class="text-lg font-semibold mb-4">Buat Sales Order</h3>
-                <div class="space-y-3 mb-4">
+        <div v-if="showModal" class="modal-overlay">
+            <div class="modal" style="max-width: 560px;">
+                <div class="flex items-center justify-between mb-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan</label>
+                        <h3 class="text-lg font-bold" style="color: var(--color-text);">Buat Sales Order</h3>
+                        <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Buat SO baru</p>
+                    </div>
+                    <button @click="closeModal" class="p-2 btn-ghost rounded-xl">
+                        <X :size="18" />
+                    </button>
+                </div>
+
+                <div class="mb-4 space-y-4">
+                    <div>
+                        <label class="label">Tujuan</label>
                         <input v-model="form.destination" type="text" placeholder="Nama tujuan pengiriman"
-                            class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                            class="input" />
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <p class="text-sm font-medium text-gray-700">Items</p>
-                        <button @click="addItem" class="text-primary-600 text-sm hover:underline">+ Tambah Item</button>
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="mb-0 label">Items</label>
+                        <button @click="addItem" class="px-3 py-1 text-xs btn-ghost">
+                            <Plus :size="13" />
+                            Tambah Item
+                        </button>
                     </div>
-                    <div v-for="(item, index) in form.items" :key="index" class="flex gap-2 mb-2">
-                        <select v-model="item.product_id"
-                            class="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                            <option value="">Pilih Produk</option>
-                            <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
-                        </select>
-                        <input v-model="item.qty" type="number" placeholder="Qty"
-                            class="w-24 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                        <button @click="removeItem(index)" class="text-red-500 hover:underline text-sm">Hapus</button>
+                    <div class="space-y-2">
+                        <div v-for="(item, index) in form.items" :key="index" class="flex gap-2 p-3 rounded-xl"
+                            style="background-color: var(--color-surface-2);">
+                            <select v-model="item.product_id" class="flex-1 input">
+                                <option value="">Pilih Produk</option>
+                                <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
+                            </select>
+                            <input v-model="item.qty" type="number" placeholder="Qty" class="input"
+                                style="width: 80px;" />
+                            <button @click="removeItem(index)" class="p-2 rounded-lg"
+                                style="color: var(--color-danger); background-color: rgba(239,68,68,0.1);">
+                                <Trash2 :size="14" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div v-if="error" class="text-red-500 text-sm mb-3">{{ error }}</div>
-                <div class="flex justify-end gap-3">
-                    <button @click="closeModal" class="px-4 py-2 text-sm text-gray-600 hover:underline">Batal</button>
-                    <button @click="handleSubmit"
-                        class="px-4 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700">Buat
-                        SO</button>
+                <div v-if="error" class="flex items-center gap-2 p-3 text-sm rounded-xl"
+                    style="background-color: rgba(239,68,68,0.1); color: var(--color-danger);">
+                    <AlertCircle :size="15" />
+                    {{ error }}
                 </div>
-            </div>
-        </div>
-
-        <div v-if="showDetail" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold">Detail SO - {{ detail?.so_number }}</h3>
-                    <button @click="showDetail = false" class="text-gray-400 hover:text-gray-600">Tutup</button>
-                </div>
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr class="text-left text-gray-500">
-                            <th class="px-4 py-2">Produk</th>
-                            <th class="px-4 py-2">Qty</th>
-                            <th class="px-4 py-2">Harga</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="item in detail?.items" :key="item.id" class="border-t">
-                            <td class="px-4 py-2">{{ item.product_name }}</td>
-                            <td class="px-4 py-2">{{ item.qty }}</td>
-                            <td class="px-4 py-2">{{ item.price }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div v-if="showShip" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-                <h3 class="text-lg font-semibold mb-4">Kirim SO - {{ shippingSONumber }}</h3>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tracking Number</label>
-                    <input v-model="trackingNumber" type="text" placeholder="Masukkan nomor resi"
-                        class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                </div>
-                <div v-if="error" class="text-red-500 text-sm mt-3">{{ error }}</div>
                 <div class="flex justify-end gap-3 mt-6">
-                    <button @click="showShip = false"
-                        class="px-4 py-2 text-sm text-gray-600 hover:underline">Batal</button>
-                    <button @click="handleShip"
-                        class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">Kirim</button>
+                    <button @click="closeModal" class="btn-ghost">Batal</button>
+                    <button @click="handleSubmit" class="btn-primary">
+                        <Save :size="15" />
+                        Buat SO
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showDetail" class="modal-overlay">
+            <div class="modal" style="max-width: 560px;">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold" style="color: var(--color-text);">Detail SO — {{ detail?.so_number
+                            }}</h3>
+                        <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">{{ detail?.destination }}</p>
+                    </div>
+                    <button @click="showDetail = false" class="p-2 btn-ghost rounded-xl">
+                        <X :size="18" />
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="table-header">Produk</th>
+                                <th class="table-header">Qty</th>
+                                <th class="table-header">Harga</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in detail?.items" :key="item.id" class="table-row">
+                                <td class="table-cell" style="color: var(--color-text);">{{ item.product_name }}</td>
+                                <td class="table-cell" style="color: var(--color-text);">{{ item.qty }}</td>
+                                <td class="table-cell" style="color: var(--color-text);">{{ item.price }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showShip" class="modal-overlay">
+            <div class="modal">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold" style="color: var(--color-text);">Kirim SO — {{ shippingSONumber
+                            }}</h3>
+                        <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Input nomor resi pengiriman
+                        </p>
+                    </div>
+                    <button @click="showShip = false" class="p-2 btn-ghost rounded-xl">
+                        <X :size="18" />
+                    </button>
+                </div>
+                <div>
+                    <label class="label">Tracking Number</label>
+                    <input v-model="trackingNumber" type="text" placeholder="Masukkan nomor resi" class="input" />
+                </div>
+                <div v-if="error" class="flex items-center gap-2 p-3 mt-4 text-sm rounded-xl"
+                    style="background-color: rgba(239,68,68,0.1); color: var(--color-danger);">
+                    <AlertCircle :size="15" />
+                    {{ error }}
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button @click="showShip = false" class="btn-ghost">Batal</button>
+                    <button @click="handleShip" class="btn-primary" style="background-color: var(--color-success);">
+                        <Truck :size="15" />
+                        Kirim
+                    </button>
                 </div>
             </div>
         </div>
@@ -153,6 +222,7 @@ import { ref, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { getSalesOrders, getSalesOrder, createSalesOrder, confirmSalesOrder, shipSalesOrder } from '@/services/modules/sales-orders'
 import { getProducts } from '@/services/modules/products'
+import { Plus, Eye, CheckCircle, Truck, X, Save, Trash2, AlertCircle } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const salesOrders = ref([])
@@ -192,6 +262,7 @@ const addItem = () => form.items.push({ product_id: '', qty: 1 })
 const removeItem = (index) => form.items.splice(index, 1)
 
 const handleSubmit = async () => {
+    error.value = ''
     try {
         await createSalesOrder(form)
         closeModal()
@@ -226,6 +297,7 @@ const openShip = (so) => {
 }
 
 const handleShip = async () => {
+    error.value = ''
     try {
         await shipSalesOrder(shippingSOId.value, { tracking_number: trackingNumber.value })
         showShip.value = false
@@ -237,16 +309,18 @@ const handleShip = async () => {
 
 const statusClass = (status) => {
     const map = {
-        draft: 'bg-gray-100 text-gray-600',
-        confirmed: 'bg-yellow-100 text-yellow-700',
-        shipped: 'bg-green-100 text-green-700',
-        cancelled: 'bg-red-100 text-red-700'
+        draft: 'background-color: var(--color-surface-2); color: var(--color-text-muted);',
+        confirmed: 'background-color: rgba(245,158,11,0.1); color: var(--color-warning);',
+        shipped: 'background-color: rgba(16,185,129,0.1); color: var(--color-success);',
+        cancelled: 'background-color: rgba(239,68,68,0.1); color: var(--color-danger);'
     }
-    return map[status] || 'bg-gray-100 text-gray-600'
+    return map[status] || ''
 }
 
 const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    return new Date(date).toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'short', year: 'numeric'
+    })
 }
 
 onMounted(async () => {

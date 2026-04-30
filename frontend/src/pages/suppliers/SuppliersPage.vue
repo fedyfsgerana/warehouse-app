@@ -1,72 +1,112 @@
 <template>
     <div>
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Supplier</h2>
-            <button v-if="authStore.isAdmin || authStore.isManager" @click="openModal()"
-                class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
+            <div>
+                <h2 class="text-2xl font-bold" style="color: var(--color-text);">Supplier</h2>
+                <p class="mt-1 text-sm" style="color: var(--color-text-muted);">Kelola data supplier</p>
+            </div>
+            <button v-if="authStore.isAdmin || authStore.isManager" @click="openModal()" class="btn-primary">
+                <Plus :size="16" />
                 Tambah Supplier
             </button>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div v-if="loading" class="p-8 text-center text-gray-400">Memuat...</div>
-            <table v-else class="w-full text-sm">
-                <thead class="bg-gray-50">
-                    <tr class="text-left text-gray-500">
-                        <th class="px-6 py-3">Nama</th>
-                        <th class="px-6 py-3">Telepon</th>
-                        <th class="px-6 py-3">Alamat</th>
-                        <th class="px-6 py-3">Aksi</th>
+        <div class="table-container">
+            <div v-if="loading" class="p-8 text-sm text-center" style="color: var(--color-text-muted);">Memuat...</div>
+            <table v-else class="w-full">
+                <thead>
+                    <tr>
+                        <th class="table-header">Nama</th>
+                        <th class="table-header">Telepon</th>
+                        <th class="table-header">Alamat</th>
+                        <th class="table-header">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="suppliers.length === 0">
-                        <td colspan="4" class="px-6 py-8 text-center text-gray-400">Belum ada supplier.</td>
+                        <td colspan="4" class="table-cell text-center" style="color: var(--color-text-muted);">Belum ada
+                            supplier.</td>
                     </tr>
-                    <tr v-for="supplier in suppliers" :key="supplier.id" class="border-t hover:bg-gray-50">
-                        <td class="px-6 py-3 font-medium">{{ supplier.name }}</td>
-                        <td class="px-6 py-3 text-gray-500">{{ supplier.phone || '-' }}</td>
-                        <td class="px-6 py-3 text-gray-500">{{ supplier.address || '-' }}</td>
-                        <td class="px-6 py-3 flex gap-3">
-                            <button v-if="authStore.isAdmin || authStore.isManager" @click="openModal(supplier)"
-                                class="text-primary-600 hover:underline">
-                                Edit
-                            </button>
-                            <button v-if="authStore.isAdmin" @click="handleDelete(supplier.id)"
-                                class="text-red-500 hover:underline">
-                                Hapus
-                            </button>
+                    <tr v-for="supplier in suppliers" :key="supplier.id" class="table-row">
+                        <td class="table-cell">
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 text-xs font-bold text-white rounded-lg"
+                                    :style="{ background: `linear-gradient(135deg, ${avatarColor(supplier.name)})` }">
+                                    {{ supplier.name?.charAt(0).toUpperCase() }}
+                                </div>
+                                <span class="font-semibold" style="color: var(--color-text);">{{ supplier.name }}</span>
+                            </div>
+                        </td>
+                        <td class="table-cell">
+                            <span v-if="supplier.phone" class="text-sm" style="color: var(--color-text-muted);">{{
+                                supplier.phone }}</span>
+                            <span v-else style="color: var(--color-text-muted);">-</span>
+                        </td>
+                        <td class="table-cell text-sm" style="color: var(--color-text-muted);">{{ supplier.address ||
+                            '-' }}</td>
+                        <td class="table-cell">
+                            <div class="flex items-center gap-2">
+                                <button v-if="authStore.isAdmin || authStore.isManager" @click="openModal(supplier)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                    style="background-color: var(--color-primary-light); color: var(--color-primary);">
+                                    <Pencil :size="12" />
+                                    Edit
+                                </button>
+                                <button v-if="authStore.isAdmin" @click="handleDelete(supplier.id)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                    style="background-color: rgba(239,68,68,0.1); color: var(--color-danger);">
+                                    <Trash2 :size="12" />
+                                    Hapus
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-                <h3 class="text-lg font-semibold mb-4">{{ editingSupplier ? 'Edit Supplier' : 'Tambah Supplier' }}</h3>
-                <div class="space-y-3">
+        <div v-if="showModal" class="modal-overlay">
+            <div class="modal">
+                <div class="flex items-center justify-between mb-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama</label>
-                        <input v-model="form.name" type="text"
-                            class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                        <h3 class="text-lg font-bold" style="color: var(--color-text);">
+                            {{ editingSupplier ? 'Edit Supplier' : 'Tambah Supplier' }}
+                        </h3>
+                        <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">
+                            {{ editingSupplier ? 'Update informasi supplier' : 'Tambah supplier baru' }}
+                        </p>
+                    </div>
+                    <button @click="closeModal" class="p-2 btn-ghost rounded-xl">
+                        <X :size="18" />
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="label">Nama Supplier</label>
+                        <input v-model="form.name" type="text" placeholder="Nama supplier" class="input" />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Telepon</label>
-                        <input v-model="form.phone" type="text"
-                            class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                        <label class="label">Telepon</label>
+                        <input v-model="form.phone" type="text" placeholder="Nomor telepon" class="input" />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                        <textarea v-model="form.address" rows="3"
-                            class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+                        <label class="label">Alamat</label>
+                        <textarea v-model="form.address" rows="3" placeholder="Alamat supplier"
+                            class="input"></textarea>
                     </div>
                 </div>
-                <div v-if="error" class="text-red-500 text-sm mt-3">{{ error }}</div>
+
+                <div v-if="error" class="flex items-center gap-2 p-3 mt-4 text-sm rounded-xl"
+                    style="background-color: rgba(239,68,68,0.1); color: var(--color-danger);">
+                    <AlertCircle :size="15" />
+                    {{ error }}
+                </div>
+
                 <div class="flex justify-end gap-3 mt-6">
-                    <button @click="closeModal" class="px-4 py-2 text-sm text-gray-600 hover:underline">Batal</button>
-                    <button @click="handleSubmit"
-                        class="px-4 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                    <button @click="closeModal" class="btn-ghost">Batal</button>
+                    <button @click="handleSubmit" class="btn-primary">
+                        <Save :size="15" />
                         {{ editingSupplier ? 'Simpan' : 'Tambah' }}
                     </button>
                 </div>
@@ -79,6 +119,7 @@
 import { ref, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from '@/services/modules/suppliers'
+import { Plus, Pencil, Trash2, X, Save, AlertCircle } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const suppliers = ref([])
@@ -88,6 +129,18 @@ const editingSupplier = ref(null)
 const error = ref('')
 
 const form = reactive({ name: '', phone: '', address: '' })
+
+const avatarColor = (name) => {
+    const colors = [
+        '#2563eb, #1d4ed8',
+        '#7c3aed, #6d28d9',
+        '#059669, #047857',
+        '#ea580c, #c2410c',
+        '#db2777, #be185d',
+    ]
+    const index = (name?.charCodeAt(0) || 0) % colors.length
+    return colors[index]
+}
 
 const fetchSuppliers = async () => {
     loading.value = true
@@ -114,6 +167,7 @@ const closeModal = () => {
 }
 
 const handleSubmit = async () => {
+    error.value = ''
     try {
         if (editingSupplier.value) {
             await updateSupplier(editingSupplier.value.id, form)
