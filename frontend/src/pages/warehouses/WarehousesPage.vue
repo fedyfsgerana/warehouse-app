@@ -1,103 +1,164 @@
 <template>
     <div>
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Gudang</h2>
-            <button v-if="authStore.isAdmin || authStore.isManager" @click="openModal()"
-                class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
+            <div>
+                <h2 class="text-2xl font-bold" style="color: var(--color-text);">Gudang</h2>
+                <p class="mt-1 text-sm" style="color: var(--color-text-muted);">Kelola gudang dan lokasi penyimpanan</p>
+            </div>
+            <button v-if="authStore.isAdmin || authStore.isManager" @click="openModal()" class="btn-primary">
+                <Plus :size="16" />
                 Tambah Gudang
             </button>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div v-if="loading" class="p-8 text-center text-gray-400">Memuat...</div>
-            <table v-else class="w-full text-sm">
-                <thead class="bg-gray-50">
-                    <tr class="text-left text-gray-500">
-                        <th class="px-6 py-3">Nama</th>
-                        <th class="px-6 py-3">Alamat</th>
-                        <th class="px-6 py-3">Aksi</th>
+        <div class="table-container">
+            <div v-if="loading" class="p-8 text-sm text-center" style="color: var(--color-text-muted);">Memuat...</div>
+            <table v-else class="w-full">
+                <thead>
+                    <tr>
+                        <th class="table-header">Nama</th>
+                        <th class="table-header">Alamat</th>
+                        <th class="table-header">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="warehouses.length === 0">
-                        <td colspan="3" class="px-6 py-8 text-center text-gray-400">Belum ada gudang.</td>
+                        <td colspan="3" class="table-cell text-center" style="color: var(--color-text-muted);">Belum ada
+                            gudang.</td>
                     </tr>
-                    <tr v-for="warehouse in warehouses" :key="warehouse.id" class="border-t hover:bg-gray-50">
-                        <td class="px-6 py-3 font-medium">{{ warehouse.name }}</td>
-                        <td class="px-6 py-3 text-gray-500">{{ warehouse.address || '-' }}</td>
-                        <td class="px-6 py-3 flex gap-3">
-                            <button @click="openLocations(warehouse)"
-                                class="text-gray-600 hover:underline">Lokasi</button>
-                            <button v-if="authStore.isAdmin || authStore.isManager" @click="openModal(warehouse)"
-                                class="text-primary-600 hover:underline">Edit</button>
-                            <button v-if="authStore.isAdmin" @click="handleDelete(warehouse.id)"
-                                class="text-red-500 hover:underline">Hapus</button>
+                    <tr v-for="warehouse in warehouses" :key="warehouse.id" class="table-row">
+                        <td class="table-cell">
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg"
+                                    style="background-color: var(--color-primary-light);">
+                                    <Warehouse :size="15" style="color: var(--color-primary);" />
+                                </div>
+                                <span class="font-semibold" style="color: var(--color-text);">{{ warehouse.name
+                                    }}</span>
+                            </div>
+                        </td>
+                        <td class="table-cell text-sm" style="color: var(--color-text-muted);">{{ warehouse.address ||
+                            '-' }}</td>
+                        <td class="table-cell">
+                            <div class="flex items-center gap-2">
+                                <button @click="openLocations(warehouse)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                    style="background-color: rgba(16,185,129,0.1); color: var(--color-success);">
+                                    <MapPin :size="12" />
+                                    Lokasi
+                                </button>
+                                <button v-if="authStore.isAdmin || authStore.isManager" @click="openModal(warehouse)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                    style="background-color: var(--color-primary-light); color: var(--color-primary);">
+                                    <Pencil :size="12" />
+                                    Edit
+                                </button>
+                                <button v-if="authStore.isAdmin" @click="handleDelete(warehouse.id)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                    style="background-color: rgba(239,68,68,0.1); color: var(--color-danger);">
+                                    <Trash2 :size="12" />
+                                    Hapus
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-                <h3 class="text-lg font-semibold mb-4">{{ editingWarehouse ? 'Edit Gudang' : 'Tambah Gudang' }}</h3>
-                <div class="space-y-3">
+        <div v-if="showModal" class="modal-overlay">
+            <div class="modal">
+                <div class="flex items-center justify-between mb-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Gudang</label>
-                        <input v-model="form.name" type="text"
-                            class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                        <h3 class="text-lg font-bold" style="color: var(--color-text);">
+                            {{ editingWarehouse ? 'Edit Gudang' : 'Tambah Gudang' }}
+                        </h3>
+                        <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">
+                            {{ editingWarehouse ? 'Update informasi gudang' : 'Tambah gudang baru' }}
+                        </p>
+                    </div>
+                    <button @click="closeModal" class="p-2 btn-ghost rounded-xl">
+                        <X :size="18" />
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="label">Nama Gudang</label>
+                        <input v-model="form.name" type="text" placeholder="Nama gudang" class="input" />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                        <textarea v-model="form.address" rows="3"
-                            class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+                        <label class="label">Alamat</label>
+                        <textarea v-model="form.address" rows="3" placeholder="Alamat gudang" class="input"></textarea>
                     </div>
                 </div>
-                <div v-if="error" class="text-red-500 text-sm mt-3">{{ error }}</div>
+                <div v-if="error" class="flex items-center gap-2 p-3 mt-4 text-sm rounded-xl"
+                    style="background-color: rgba(239,68,68,0.1); color: var(--color-danger);">
+                    <AlertCircle :size="15" />
+                    {{ error }}
+                </div>
                 <div class="flex justify-end gap-3 mt-6">
-                    <button @click="closeModal" class="px-4 py-2 text-sm text-gray-600 hover:underline">Batal</button>
-                    <button @click="handleSubmit"
-                        class="px-4 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                    <button @click="closeModal" class="btn-ghost">Batal</button>
+                    <button @click="handleSubmit" class="btn-primary">
+                        <Save :size="15" />
                         {{ editingWarehouse ? 'Simpan' : 'Tambah' }}
                     </button>
                 </div>
             </div>
         </div>
 
-        <div v-if="showLocations" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold">Lokasi - {{ selectedWarehouse?.name }}</h3>
-                    <button @click="showLocations = false" class="text-gray-400 hover:text-gray-600">Tutup</button>
+        <div v-if="showLocations" class="modal-overlay">
+            <div class="modal" style="max-width: 560px;">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold" style="color: var(--color-text);">Lokasi — {{
+                            selectedWarehouse?.name }}</h3>
+                        <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Daftar rak dan lokasi
+                            penyimpanan</p>
+                    </div>
+                    <button @click="showLocations = false" class="p-2 btn-ghost rounded-xl">
+                        <X :size="18" />
+                    </button>
                 </div>
 
-                <table class="w-full text-sm mb-4">
-                    <thead class="bg-gray-50">
-                        <tr class="text-left text-gray-500">
-                            <th class="px-4 py-2">Kode Lokasi</th>
-                            <th class="px-4 py-2">Produk</th>
-                            <th class="px-4 py-2">Qty</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-if="locations.length === 0">
-                            <td colspan="3" class="px-4 py-4 text-center text-gray-400">Belum ada lokasi.</td>
-                        </tr>
-                        <tr v-for="loc in locations" :key="loc.id" class="border-t">
-                            <td class="px-4 py-2 font-medium">{{ loc.location_code }}</td>
-                            <td class="px-4 py-2">{{ loc.product_name || '-' }}</td>
-                            <td class="px-4 py-2">{{ loc.qty }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="mb-4 table-container">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="table-header">Kode Lokasi</th>
+                                <th class="table-header">Produk</th>
+                                <th class="table-header">Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="locations.length === 0">
+                                <td colspan="3" class="table-cell text-center" style="color: var(--color-text-muted);">
+                                    Belum ada lokasi.</td>
+                            </tr>
+                            <tr v-for="loc in locations" :key="loc.id" class="table-row">
+                                <td class="table-cell">
+                                    <span class="px-2 py-1 font-mono text-xs rounded-lg"
+                                        style="background-color: var(--color-surface-2); color: var(--color-text);">
+                                        {{ loc.location_code }}
+                                    </span>
+                                </td>
+                                <td class="table-cell" style="color: var(--color-text-muted);">{{ loc.product_name ||
+                                    '-' }}</td>
+                                <td class="table-cell font-semibold" style="color: var(--color-text);">{{ loc.qty }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                <div v-if="authStore.isAdmin || authStore.isManager" class="border-t pt-4">
-                    <p class="text-sm font-medium text-gray-700 mb-2">Tambah Lokasi</p>
+                <div v-if="authStore.isAdmin || authStore.isManager">
+                    <label class="label">Tambah Lokasi Baru</label>
                     <div class="flex gap-2">
-                        <input v-model="newLocation.location_code" placeholder="Kode lokasi, ex: A-01"
-                            class="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                        <button @click="handleAddLocation"
-                            class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-700">Tambah</button>
+                        <input v-model="newLocation.location_code" placeholder="Kode lokasi, ex: A-01-03"
+                            class="flex-1 input" />
+                        <button @click="handleAddLocation" class="px-4 btn-primary">
+                            <Plus :size="15" />
+                            Tambah
+                        </button>
                     </div>
                 </div>
             </div>
@@ -109,6 +170,7 @@
 import { ref, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { getWarehouses, createWarehouse, updateWarehouse, deleteWarehouse, getLocations, createLocation } from '@/services/modules/warehouses'
+import { Plus, Pencil, Trash2, X, Save, AlertCircle, Warehouse, MapPin } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const warehouses = ref([])
@@ -147,6 +209,7 @@ const closeModal = () => {
 }
 
 const handleSubmit = async () => {
+    error.value = ''
     try {
         if (editingWarehouse.value) {
             await updateWarehouse(editingWarehouse.value.id, form)
@@ -178,6 +241,7 @@ const openLocations = async (warehouse) => {
 }
 
 const handleAddLocation = async () => {
+    if (!newLocation.location_code) return
     try {
         await createLocation(selectedWarehouse.value.id, newLocation)
         newLocation.location_code = ''

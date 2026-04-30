@@ -1,44 +1,69 @@
 <template>
     <div>
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Stok</h2>
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold" style="color: var(--color-text);">Stok</h2>
+                <p class="mt-1 text-sm" style="color: var(--color-text-muted);">Monitor stok dan history transaksi</p>
+            </div>
+        </div>
 
-        <div class="bg-white rounded-xl shadow-sm p-4 mb-6 flex gap-4">
-            <select v-model="selectedWarehouse" @change="fetchStock"
-                class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <div class="flex gap-4 mb-6 card">
+            <select v-model="selectedWarehouse" @change="fetchStock" class="input" style="width: 220px;">
                 <option value="">Semua Gudang</option>
                 <option v-for="w in warehouses" :key="w.id" :value="w.id">{{ w.name }}</option>
             </select>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-            <div v-if="stockStore.loading" class="p-8 text-center text-gray-400">Memuat...</div>
-            <table v-else class="w-full text-sm">
-                <thead class="bg-gray-50">
-                    <tr class="text-left text-gray-500">
-                        <th class="px-6 py-3">SKU</th>
-                        <th class="px-6 py-3">Produk</th>
-                        <th class="px-6 py-3">Gudang</th>
-                        <th class="px-6 py-3">Lokasi</th>
-                        <th class="px-6 py-3">Qty</th>
-                        <th class="px-6 py-3">Unit</th>
-                        <th class="px-6 py-3">Status</th>
+        <div class="mb-6 table-container">
+            <div class="flex items-center justify-between px-5 py-4"
+                style="border-bottom: 1px solid var(--color-border);">
+                <p class="text-sm font-bold" style="color: var(--color-text);">Data Stok</p>
+                <span class="px-3 py-1 text-xs rounded-full"
+                    style="background-color: var(--color-surface-2); color: var(--color-text-muted);">
+                    {{ stockStore.stocks.length }} item
+                </span>
+            </div>
+            <div v-if="stockStore.loading" class="p-8 text-sm text-center" style="color: var(--color-text-muted);">
+                Memuat...</div>
+            <table v-else class="w-full">
+                <thead>
+                    <tr>
+                        <th class="table-header">SKU</th>
+                        <th class="table-header">Produk</th>
+                        <th class="table-header">Gudang</th>
+                        <th class="table-header">Lokasi</th>
+                        <th class="table-header">Qty</th>
+                        <th class="table-header">Unit</th>
+                        <th class="table-header">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="stockStore.stocks.length === 0">
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-400">Belum ada data stok.</td>
+                        <td colspan="7" class="table-cell text-center" style="color: var(--color-text-muted);">Belum ada
+                            data stok.</td>
                     </tr>
-                    <tr v-for="item in stockStore.stocks" :key="item.id" class="border-t hover:bg-gray-50">
-                        <td class="px-6 py-3 text-gray-500">{{ item.sku }}</td>
-                        <td class="px-6 py-3 font-medium">{{ item.product_name }}</td>
-                        <td class="px-6 py-3">{{ item.warehouse_name }}</td>
-                        <td class="px-6 py-3">{{ item.location_code || '-' }}</td>
-                        <td class="px-6 py-3 font-medium">{{ item.qty }}</td>
-                        <td class="px-6 py-3 text-gray-500">{{ item.unit }}</td>
-                        <td class="px-6 py-3">
-                            <span
-                                :class="item.qty <= item.min_stock ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'"
-                                class="px-2 py-0.5 rounded-full text-xs font-medium">
+                    <tr v-for="item in stockStore.stocks" :key="item.id" class="table-row">
+                        <td class="table-cell">
+                            <span class="px-2 py-1 font-mono text-xs rounded-lg"
+                                style="background-color: var(--color-surface-2); color: var(--color-text-muted);">
+                                {{ item.sku }}
+                            </span>
+                        </td>
+                        <td class="table-cell font-semibold" style="color: var(--color-text);">{{ item.product_name }}
+                        </td>
+                        <td class="table-cell" style="color: var(--color-text-muted);">{{ item.warehouse_name }}</td>
+                        <td class="table-cell">
+                            <span class="px-2 py-1 font-mono text-xs rounded-lg"
+                                style="background-color: var(--color-surface-2); color: var(--color-text-muted);">
+                                {{ item.location_code || '-' }}
+                            </span>
+                        </td>
+                        <td class="table-cell font-bold" style="color: var(--color-text);">{{ item.qty }}</td>
+                        <td class="table-cell" style="color: var(--color-text-muted);">{{ item.unit }}</td>
+                        <td class="table-cell">
+                            <span class="badge" :style="item.qty <= item.min_stock
+                                ? 'background-color: rgba(239,68,68,0.1); color: var(--color-danger);'
+                                : 'background-color: rgba(16,185,129,0.1); color: var(--color-success);'">
                                 {{ item.qty <= item.min_stock ? 'Menipis' : 'Normal' }} </span>
                         </td>
                     </tr>
@@ -46,47 +71,60 @@
             </table>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm p-6">
+        <div class="card">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-800">History Transaksi</h3>
-                <div class="flex gap-2">
-                    <input v-model="historyFilter.from" type="date"
-                        class="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                    <input v-model="historyFilter.to" type="date"
-                        class="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                    <button @click="fetchHistory"
-                        class="bg-primary-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-primary-700">Filter</button>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-lg"
+                        style="background-color: var(--color-primary-light);">
+                        <History :size="15" style="color: var(--color-primary);" />
+                    </div>
+                    <h3 class="text-base font-bold" style="color: var(--color-text);">History Transaksi</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input v-model="historyFilter.from" type="date" class="input py-1.5 text-xs"
+                        style="width: 150px;" />
+                    <input v-model="historyFilter.to" type="date" class="input py-1.5 text-xs" style="width: 150px;" />
+                    <button @click="fetchHistory" class="btn-primary py-1.5 px-3 text-xs">Filter</button>
                 </div>
             </div>
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50">
-                    <tr class="text-left text-gray-500">
-                        <th class="px-6 py-3">Produk</th>
-                        <th class="px-6 py-3">Tipe</th>
-                        <th class="px-6 py-3">Qty</th>
-                        <th class="px-6 py-3">Referensi</th>
-                        <th class="px-6 py-3">Oleh</th>
-                        <th class="px-6 py-3">Waktu</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-if="history.length === 0">
-                        <td colspan="6" class="px-6 py-8 text-center text-gray-400">Belum ada history.</td>
-                    </tr>
-                    <tr v-for="item in history" :key="item.id" class="border-t hover:bg-gray-50">
-                        <td class="px-6 py-3 font-medium">{{ item.product_name }}</td>
-                        <td class="px-6 py-3">
-                            <span :class="typeClass(item.type)" class="px-2 py-0.5 rounded-full text-xs font-medium">
-                                {{ item.type }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-3">{{ item.qty }}</td>
-                        <td class="px-6 py-3 text-gray-500">{{ item.reference_type }} #{{ item.reference_id }}</td>
-                        <td class="px-6 py-3 text-gray-500">{{ item.created_by_name }}</td>
-                        <td class="px-6 py-3 text-gray-500">{{ formatDate(item.created_at) }}</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="table-header">Produk</th>
+                            <th class="table-header">Tipe</th>
+                            <th class="table-header">Qty</th>
+                            <th class="table-header">Referensi</th>
+                            <th class="table-header">Oleh</th>
+                            <th class="table-header">Waktu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="history.length === 0">
+                            <td colspan="6" class="table-cell text-center" style="color: var(--color-text-muted);">Belum
+                                ada history.</td>
+                        </tr>
+                        <tr v-for="item in history" :key="item.id" class="table-row">
+                            <td class="table-cell font-semibold" style="color: var(--color-text);">{{ item.product_name
+                            }}</td>
+                            <td class="table-cell">
+                                <span class="badge" :style="typeClass(item.type)">{{ item.type }}</span>
+                            </td>
+                            <td class="table-cell font-semibold" style="color: var(--color-text);">{{ item.qty }}</td>
+                            <td class="table-cell">
+                                <span class="px-2 py-1 text-xs rounded-lg"
+                                    style="background-color: var(--color-surface-2); color: var(--color-text-muted);">
+                                    {{ item.reference_type }} #{{ item.reference_id }}
+                                </span>
+                            </td>
+                            <td class="table-cell" style="color: var(--color-text-muted);">{{ item.created_by_name }}
+                            </td>
+                            <td class="table-cell" style="color: var(--color-text-muted);">{{
+                                formatDate(item.created_at) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </template>
@@ -96,6 +134,7 @@ import { ref, onMounted, reactive } from 'vue'
 import { useStockStore } from '@/stores/stock.store'
 import { getStockHistory } from '@/services/modules/stock'
 import { getWarehouses } from '@/services/modules/warehouses'
+import { History } from 'lucide-vue-next'
 
 const stockStore = useStockStore()
 const warehouses = ref([])
@@ -115,9 +154,9 @@ const fetchHistory = async () => {
 }
 
 const typeClass = (type) => {
-    if (type === 'IN') return 'bg-green-100 text-green-700'
-    if (type === 'OUT') return 'bg-red-100 text-red-700'
-    return 'bg-yellow-100 text-yellow-700'
+    if (type === 'IN') return 'background-color: rgba(16,185,129,0.1); color: var(--color-success);'
+    if (type === 'OUT') return 'background-color: rgba(239,68,68,0.1); color: var(--color-danger);'
+    return 'background-color: rgba(245,158,11,0.1); color: var(--color-warning);'
 }
 
 const formatDate = (date) => {

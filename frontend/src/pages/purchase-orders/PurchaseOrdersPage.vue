@@ -1,16 +1,18 @@
 <template>
     <div>
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Purchase Order</h2>
-            <button v-if="authStore.isAdmin || authStore.isManager" @click="openModal()"
-                class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
+            <div>
+                <h2 class="text-2xl font-bold" style="color: var(--color-text);">Purchase Order</h2>
+                <p class="mt-1 text-sm" style="color: var(--color-text-muted);">Kelola pembelian dari supplier</p>
+            </div>
+            <button v-if="authStore.isAdmin || authStore.isManager" @click="openModal()" class="btn-primary">
+                <Plus :size="16" />
                 Buat PO
             </button>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm p-4 mb-6 flex gap-4">
-            <select v-model="filterStatus" @change="fetchPO"
-                class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <div class="flex gap-4 mb-6 card">
+            <select v-model="filterStatus" @change="fetchPO" class="input" style="width: 200px;">
                 <option value="">Semua Status</option>
                 <option value="draft">Draft</option>
                 <option value="sent">Sent</option>
@@ -19,58 +21,83 @@
             </select>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div v-if="loading" class="p-8 text-center text-gray-400">Memuat...</div>
-            <table v-else class="w-full text-sm">
-                <thead class="bg-gray-50">
-                    <tr class="text-left text-gray-500">
-                        <th class="px-6 py-3">No. PO</th>
-                        <th class="px-6 py-3">Supplier</th>
-                        <th class="px-6 py-3">Status</th>
-                        <th class="px-6 py-3">Dibuat Oleh</th>
-                        <th class="px-6 py-3">Tanggal</th>
-                        <th class="px-6 py-3">Aksi</th>
+        <div class="table-container">
+            <div v-if="loading" class="p-8 text-sm text-center" style="color: var(--color-text-muted);">Memuat...</div>
+            <table v-else class="w-full">
+                <thead>
+                    <tr>
+                        <th class="table-header">No. PO</th>
+                        <th class="table-header">Supplier</th>
+                        <th class="table-header">Status</th>
+                        <th class="table-header">Dibuat Oleh</th>
+                        <th class="table-header">Tanggal</th>
+                        <th class="table-header">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="purchaseOrders.length === 0">
-                        <td colspan="6" class="px-6 py-8 text-center text-gray-400">Belum ada purchase order.</td>
+                        <td colspan="6" class="table-cell text-center" style="color: var(--color-text-muted);">Belum ada
+                            purchase order.</td>
                     </tr>
-                    <tr v-for="po in purchaseOrders" :key="po.id" class="border-t hover:bg-gray-50">
-                        <td class="px-6 py-3 font-medium">{{ po.po_number }}</td>
-                        <td class="px-6 py-3">{{ po.supplier_name || '-' }}</td>
-                        <td class="px-6 py-3">
-                            <span :class="statusClass(po.status)"
-                                class="px-2 py-0.5 rounded-full text-xs font-medium capitalize">
-                                {{ po.status }}
+                    <tr v-for="po in purchaseOrders" :key="po.id" class="table-row">
+                        <td class="table-cell">
+                            <span class="px-2 py-1 font-mono text-xs rounded-lg"
+                                style="background-color: var(--color-surface-2); color: var(--color-text);">
+                                {{ po.po_number }}
                             </span>
                         </td>
-                        <td class="px-6 py-3 text-gray-500">{{ po.created_by_name }}</td>
-                        <td class="px-6 py-3 text-gray-500">{{ formatDate(po.created_at) }}</td>
-                        <td class="px-6 py-3 flex gap-2">
-                            <button @click="openDetail(po.id)" class="text-primary-600 hover:underline">Detail</button>
-                            <button v-if="(authStore.isAdmin || authStore.isManager) && po.status === 'draft'"
-                                @click="handleUpdateStatus(po.id, 'sent')" class="text-yellow-600 hover:underline">
-                                Kirim
-                            </button>
-                            <button v-if="(authStore.isAdmin || authStore.isManager) && po.status === 'sent'"
-                                @click="openReceive(po)" class="text-green-600 hover:underline">
-                                Terima
-                            </button>
+                        <td class="table-cell" style="color: var(--color-text);">{{ po.supplier_name || '-' }}</td>
+                        <td class="table-cell">
+                            <span class="badge" :style="statusClass(po.status)">{{ po.status }}</span>
+                        </td>
+                        <td class="table-cell" style="color: var(--color-text-muted);">{{ po.created_by_name }}</td>
+                        <td class="table-cell" style="color: var(--color-text-muted);">{{ formatDate(po.created_at) }}
+                        </td>
+                        <td class="table-cell">
+                            <div class="flex items-center gap-2">
+                                <button @click="openDetail(po.id)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                    style="background-color: var(--color-surface-2); color: var(--color-text);">
+                                    <Eye :size="12" />
+                                    Detail
+                                </button>
+                                <button v-if="(authStore.isAdmin || authStore.isManager) && po.status === 'draft'"
+                                    @click="handleUpdateStatus(po.id, 'sent')"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                    style="background-color: rgba(245,158,11,0.1); color: var(--color-warning);">
+                                    <Send :size="12" />
+                                    Kirim
+                                </button>
+                                <button v-if="(authStore.isAdmin || authStore.isManager) && po.status === 'sent'"
+                                    @click="openReceive(po)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                    style="background-color: rgba(16,185,129,0.1); color: var(--color-success);">
+                                    <PackageCheck :size="12" />
+                                    Terima
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl">
-                <h3 class="text-lg font-semibold mb-4">Buat Purchase Order</h3>
-                <div class="space-y-3 mb-4">
+        <div v-if="showModal" class="modal-overlay">
+            <div class="modal" style="max-width: 560px;">
+                <div class="flex items-center justify-between mb-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
-                        <select v-model="form.supplier_id"
-                            class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <h3 class="text-lg font-bold" style="color: var(--color-text);">Buat Purchase Order</h3>
+                        <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Buat PO baru ke supplier</p>
+                    </div>
+                    <button @click="closeModal" class="p-2 btn-ghost rounded-xl">
+                        <X :size="18" />
+                    </button>
+                </div>
+
+                <div class="mb-4 space-y-4">
+                    <div>
+                        <label class="label">Supplier</label>
+                        <select v-model="form.supplier_id" class="input">
                             <option value="">Pilih Supplier</option>
                             <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
                         </select>
@@ -78,98 +105,138 @@
                 </div>
 
                 <div class="mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <p class="text-sm font-medium text-gray-700">Items</p>
-                        <button @click="addItem" class="text-primary-600 text-sm hover:underline">+ Tambah Item</button>
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="mb-0 label">Items</label>
+                        <button @click="addItem" class="px-3 py-1 text-xs btn-ghost">
+                            <Plus :size="13" />
+                            Tambah Item
+                        </button>
                     </div>
-                    <div v-for="(item, index) in form.items" :key="index" class="flex gap-2 mb-2">
-                        <select v-model="item.product_id"
-                            class="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                            <option value="">Pilih Produk</option>
-                            <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
-                        </select>
-                        <input v-model="item.qty" type="number" placeholder="Qty"
-                            class="w-24 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                        <input v-model="item.price" type="number" placeholder="Harga"
-                            class="w-28 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                        <button @click="removeItem(index)" class="text-red-500 hover:underline text-sm">Hapus</button>
+                    <div class="space-y-2">
+                        <div v-for="(item, index) in form.items" :key="index" class="flex gap-2 p-3 rounded-xl"
+                            style="background-color: var(--color-surface-2);">
+                            <select v-model="item.product_id" class="flex-1 input">
+                                <option value="">Pilih Produk</option>
+                                <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
+                            </select>
+                            <input v-model="item.qty" type="number" placeholder="Qty" class="input"
+                                style="width: 80px;" />
+                            <input v-model="item.price" type="number" placeholder="Harga" class="input"
+                                style="width: 110px;" />
+                            <button @click="removeItem(index)" class="p-2 rounded-lg"
+                                style="color: var(--color-danger); background-color: rgba(239,68,68,0.1);">
+                                <Trash2 :size="14" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div v-if="error" class="text-red-500 text-sm mb-3">{{ error }}</div>
-                <div class="flex justify-end gap-3">
-                    <button @click="closeModal" class="px-4 py-2 text-sm text-gray-600 hover:underline">Batal</button>
-                    <button @click="handleSubmit"
-                        class="px-4 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700">Buat
-                        PO</button>
+                <div v-if="error" class="flex items-center gap-2 p-3 text-sm rounded-xl"
+                    style="background-color: rgba(239,68,68,0.1); color: var(--color-danger);">
+                    <AlertCircle :size="15" />
+                    {{ error }}
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button @click="closeModal" class="btn-ghost">Batal</button>
+                    <button @click="handleSubmit" class="btn-primary">
+                        <Save :size="15" />
+                        Buat PO
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div v-if="showDetail" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold">Detail PO - {{ detail?.po_number }}</h3>
-                    <button @click="showDetail = false" class="text-gray-400 hover:text-gray-600">Tutup</button>
+        <div v-if="showDetail" class="modal-overlay">
+            <div class="modal" style="max-width: 560px;">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold" style="color: var(--color-text);">Detail PO — {{ detail?.po_number
+                        }}</h3>
+                        <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">{{ detail?.supplier_name }}
+                        </p>
+                    </div>
+                    <button @click="showDetail = false" class="p-2 btn-ghost rounded-xl">
+                        <X :size="18" />
+                    </button>
                 </div>
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr class="text-left text-gray-500">
-                            <th class="px-4 py-2">Produk</th>
-                            <th class="px-4 py-2">Qty</th>
-                            <th class="px-4 py-2">Diterima</th>
-                            <th class="px-4 py-2">Harga</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="item in detail?.items" :key="item.id" class="border-t">
-                            <td class="px-4 py-2">{{ item.product_name }}</td>
-                            <td class="px-4 py-2">{{ item.qty }}</td>
-                            <td class="px-4 py-2">{{ item.qty_received }}</td>
-                            <td class="px-4 py-2">{{ item.price }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="table-header">Produk</th>
+                                <th class="table-header">Qty</th>
+                                <th class="table-header">Diterima</th>
+                                <th class="table-header">Harga</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in detail?.items" :key="item.id" class="table-row">
+                                <td class="table-cell" style="color: var(--color-text);">{{ item.product_name }}</td>
+                                <td class="table-cell" style="color: var(--color-text);">{{ item.qty }}</td>
+                                <td class="table-cell" style="color: var(--color-text);">{{ item.qty_received }}</td>
+                                <td class="table-cell" style="color: var(--color-text);">{{ item.price }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <div v-if="showReceive" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl">
-                <h3 class="text-lg font-semibold mb-4">Terima Barang - {{ receivingPO?.po_number }}</h3>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Gudang Tujuan</label>
-                    <select v-model="receiveForm.warehouse_id"
-                        class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <div v-if="showReceive" class="modal-overlay">
+            <div class="modal" style="max-width: 560px;">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold" style="color: var(--color-text);">Terima Barang — {{
+                            receivingPO?.po_number }}</h3>
+                        <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Input qty barang yang diterima
+                        </p>
+                    </div>
+                    <button @click="showReceive = false" class="p-2 btn-ghost rounded-xl">
+                        <X :size="18" />
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <label class="label">Gudang Tujuan</label>
+                    <select v-model="receiveForm.warehouse_id" class="input">
                         <option value="">Pilih Gudang</option>
                         <option v-for="w in warehouses" :key="w.id" :value="w.id">{{ w.name }}</option>
                     </select>
                 </div>
-                <table class="w-full text-sm mb-4">
-                    <thead class="bg-gray-50">
-                        <tr class="text-left text-gray-500">
-                            <th class="px-4 py-2">Produk</th>
-                            <th class="px-4 py-2">Qty PO</th>
-                            <th class="px-4 py-2">Qty Diterima</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="item in receiveForm.items" :key="item.product_id" class="border-t">
-                            <td class="px-4 py-2">{{ item.product_name }}</td>
-                            <td class="px-4 py-2">{{ item.qty }}</td>
-                            <td class="px-4 py-2">
-                                <input v-model="item.qty_received" type="number"
-                                    class="w-20 border rounded px-2 py-1 text-sm" />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div v-if="error" class="text-red-500 text-sm mb-3">{{ error }}</div>
-                <div class="flex justify-end gap-3">
-                    <button @click="showReceive = false"
-                        class="px-4 py-2 text-sm text-gray-600 hover:underline">Batal</button>
-                    <button @click="handleReceive"
-                        class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">Terima
-                        Barang</button>
+
+                <div class="mb-4 table-container">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="table-header">Produk</th>
+                                <th class="table-header">Qty PO</th>
+                                <th class="table-header">Qty Diterima</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in receiveForm.items" :key="item.product_id" class="table-row">
+                                <td class="table-cell" style="color: var(--color-text);">{{ item.product_name }}</td>
+                                <td class="table-cell" style="color: var(--color-text-muted);">{{ item.qty }}</td>
+                                <td class="table-cell">
+                                    <input v-model="item.qty_received" type="number" class="input py-1.5 text-xs"
+                                        style="width: 80px;" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div v-if="error" class="flex items-center gap-2 p-3 text-sm rounded-xl"
+                    style="background-color: rgba(239,68,68,0.1); color: var(--color-danger);">
+                    <AlertCircle :size="15" />
+                    {{ error }}
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button @click="showReceive = false" class="btn-ghost">Batal</button>
+                    <button @click="handleReceive" class="btn-primary" style="background-color: var(--color-success);">
+                        <PackageCheck :size="15" />
+                        Terima Barang
+                    </button>
                 </div>
             </div>
         </div>
@@ -182,6 +249,8 @@ import { useAuthStore } from '@/stores/auth.store'
 import { getPurchaseOrders, getPurchaseOrder, createPurchaseOrder, updatePurchaseOrderStatus, receivePurchaseOrder } from '@/services/modules/purchase-orders'
 import { getProducts } from '@/services/modules/products'
 import { getWarehouses } from '@/services/modules/warehouses'
+import { getSuppliers } from '@/services/modules/suppliers'
+import { Plus, Eye, Send, PackageCheck, X, Save, Trash2, AlertCircle } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const purchaseOrders = ref([])
@@ -218,11 +287,11 @@ const openModal = () => {
 }
 
 const closeModal = () => { showModal.value = false }
-
 const addItem = () => form.items.push({ product_id: '', qty: 1, price: 0 })
 const removeItem = (index) => form.items.splice(index, 1)
 
 const handleSubmit = async () => {
+    error.value = ''
     try {
         await createPurchaseOrder(form)
         closeModal()
@@ -262,6 +331,7 @@ const openReceive = async (po) => {
 }
 
 const handleReceive = async () => {
+    error.value = ''
     try {
         await receivePurchaseOrder(receivingPO.value.id, receiveForm)
         showReceive.value = false
@@ -273,12 +343,12 @@ const handleReceive = async () => {
 
 const statusClass = (status) => {
     const map = {
-        draft: 'bg-gray-100 text-gray-600',
-        sent: 'bg-yellow-100 text-yellow-700',
-        received: 'bg-green-100 text-green-700',
-        cancelled: 'bg-red-100 text-red-700'
+        draft: 'background-color: var(--color-surface-2); color: var(--color-text-muted);',
+        sent: 'background-color: rgba(245,158,11,0.1); color: var(--color-warning);',
+        received: 'background-color: rgba(16,185,129,0.1); color: var(--color-success);',
+        cancelled: 'background-color: rgba(239,68,68,0.1); color: var(--color-danger);'
     }
-    return map[status] || 'bg-gray-100 text-gray-600'
+    return map[status] || ''
 }
 
 const formatDate = (date) => {
@@ -287,8 +357,9 @@ const formatDate = (date) => {
 
 onMounted(async () => {
     fetchPO()
-    const [p, w] = await Promise.all([getProducts({}), getWarehouses()])
+    const [p, w, s] = await Promise.all([getProducts({}), getWarehouses(), getSuppliers()])
     products.value = p.data.data
     warehouses.value = w.data.data
+    suppliers.value = s.data.data
 })
 </script>
