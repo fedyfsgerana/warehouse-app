@@ -12,6 +12,7 @@ const salesOrderRoutes = require("./modules/sales-orders/sales-orders.routes");
 const reportRoutes = require("./modules/reports/reports.routes");
 const supplierRoutes = require("./modules/suppliers/suppliers.routes");
 const userRoutes = require("./modules/users/users.routes");
+const menuRoutes = require("./modules/menus/menus.routes");
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use("/api/sales-orders", salesOrderRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/menus", menuRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Warehouse API is running" });
