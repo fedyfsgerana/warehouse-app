@@ -21,16 +21,17 @@
             <p class="text-xs font-bold px-3 mb-2 uppercase tracking-widest" style="color: var(--color-text-muted);">
                 Menu</p>
 
-            <router-link v-for="item in menuItems" :key="item.path" :to="item.path"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group"
+            <div v-if="menuStore.loading" class="px-3 py-2 text-xs" style="color: var(--color-text-muted);">Memuat
+                menu...</div>
+
+            <router-link v-for="item in menuStore.menus" :key="item.id" :to="item.path"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                 :class="isActive(item.path) ? 'active-nav' : 'inactive-nav'" @click="$emit('close')">
                 <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all"
                     :class="isActive(item.path) ? 'active-icon' : 'inactive-icon'">
-                    <component :is="item.icon" :size="16" />
+                    <component :is="getIcon(item.icon)" :size="16" />
                 </div>
                 <span>{{ item.label }}</span>
-
-                <!-- Active indicator -->
                 <div v-if="isActive(item.path)" class="ml-auto w-1.5 h-1.5 rounded-full"
                     style="background-color: var(--color-primary);"></div>
             </router-link>
@@ -60,29 +61,30 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import { useMenuStore } from '@/stores/menu.store'
 import {
-    LayoutDashboard, Package, Warehouse, Layers,
-    ShoppingCart, TrendingUp, BarChart2, Users, Truck
+    Warehouse, LayoutDashboard, Package, Layers,
+    ShoppingCart, TrendingUp, BarChart2, Users,
+    Truck, Menu, Settings, FileText, Home,
+    Box, Database, PieChart, ClipboardList
 } from 'lucide-vue-next'
 
-const props = defineProps({ open: Boolean })
+defineProps({ open: Boolean })
 defineEmits(['close'])
 
 const authStore = useAuthStore()
+const menuStore = useMenuStore()
 const route = useRoute()
 const isMobile = ref(false)
 
-const menuItems = [
-    { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/products', label: 'Produk', icon: Package },
-    { path: '/warehouses', label: 'Gudang', icon: Warehouse },
-    { path: '/stock', label: 'Stok', icon: Layers },
-    { path: '/purchase-orders', label: 'Purchase Order', icon: ShoppingCart },
-    { path: '/sales-orders', label: 'Sales Order', icon: TrendingUp },
-    { path: '/reports', label: 'Laporan', icon: BarChart2 },
-    { path: '/suppliers', label: 'Supplier', icon: Truck },
-    { path: '/users', label: 'User Management', icon: Users },
-]
+const iconMap = {
+    LayoutDashboard, Package, Warehouse, Layers,
+    ShoppingCart, TrendingUp, BarChart2, Users,
+    Truck, Menu, Settings, FileText, Home,
+    Box, Database, PieChart, ClipboardList
+}
+
+const getIcon = (name) => iconMap[name] || LayoutDashboard
 
 const userInitial = computed(() => authStore.user?.name?.charAt(0).toUpperCase() || 'U')
 

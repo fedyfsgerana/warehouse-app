@@ -39,11 +39,13 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useThemeStore } from '@/stores/theme.store'
+import { useMenuStore } from '@/stores/menu.store'
 import AppSidebar from '@/components/AppSidebar.vue'
 import AppNavbar from '@/components/AppNavbar.vue'
 import AppFooter from '@/components/AppFooter.vue'
 
 const themeStore = useThemeStore()
+const menuStore = useMenuStore()
 const sidebarOpen = ref(true)
 const isMobile = ref(false)
 
@@ -56,9 +58,10 @@ const toggleSidebar = () => {
     sidebarOpen.value = !sidebarOpen.value
 }
 
-onMounted(() => {
+onMounted(async () => {
     checkMobile()
     window.addEventListener('resize', checkMobile)
+    await menuStore.fetchMyMenus()
 })
 
 onUnmounted(() => {
