@@ -49,6 +49,7 @@ const menuItems = [
     { path: '/purchase-orders', label: 'Purchase Order', icon: 'PO' },
     { path: '/sales-orders', label: 'Sales Order', icon: 'SO' },
     { path: '/reports', label: 'Laporan', icon: 'L' },
+    { path: '/suppliers', label: 'Supplier', icon: 'SP' },
 ]
 
 const handleLogout = async () => {
