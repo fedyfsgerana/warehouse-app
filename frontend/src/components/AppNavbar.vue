@@ -5,31 +5,31 @@
         <div class="flex items-center justify-between px-6 h-14" style="border-bottom: 1px solid var(--color-border);">
 
             <div class="flex items-center gap-3">
-                <button v-if="!showMenu" @click="emit('toggle-sidebar')" class="btn-ghost p-2 rounded-xl">
+                <button v-if="!showMenu" @click="emit('toggle-sidebar')" class="p-2 btn-ghost rounded-xl">
                     <Menu :size="18" />
                 </button>
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center"
+                    <div class="flex items-center justify-center w-8 h-8 text-sm font-black text-white rounded-xl"
                         style="background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));">
-                        <Warehouse :size="16" class="text-white" />
+                        W
                     </div>
-                    <span class="font-bold text-sm" style="color: var(--color-text);">Warehouse MS</span>
+                    <span class="text-sm font-bold" style="color: var(--color-text);">Warehouse MS</span>
                 </div>
             </div>
 
             <div class="flex items-center gap-1">
 
                 <div class="relative">
-                    <button @click="showSettings = !showSettings" class="btn-ghost p-2 rounded-xl">
+                    <button @click="showSettings = !showSettings" class="p-2 btn-ghost rounded-xl">
                         <Settings :size="18" />
                     </button>
-                    <div v-if="showSettings" class="absolute right-0 top-11 w-72 rounded-2xl shadow-2xl z-50 p-4"
+                    <div v-if="showSettings" class="absolute right-0 z-50 p-4 shadow-2xl top-11 w-72 rounded-2xl"
                         style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
-                        <p class="text-xs font-bold uppercase tracking-widest mb-3"
+                        <p class="mb-3 text-xs font-bold tracking-widest uppercase"
                             style="color: var(--color-text-muted);">Pengaturan Tampilan</p>
 
                         <div class="mb-4">
-                            <p class="text-xs font-semibold mb-2" style="color: var(--color-text-muted);">Layout</p>
+                            <p class="mb-2 text-xs font-semibold" style="color: var(--color-text-muted);">Layout</p>
                             <div class="grid grid-cols-2 gap-2">
                                 <button @click="setLayout('navbar')"
                                     class="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all"
@@ -51,7 +51,7 @@
                         </div>
 
                         <div class="mb-4">
-                            <p class="text-xs font-semibold mb-2" style="color: var(--color-text-muted);">Mode Tampilan
+                            <p class="mb-2 text-xs font-semibold" style="color: var(--color-text-muted);">Mode Tampilan
                             </p>
                             <div class="grid grid-cols-3 gap-2">
                                 <button v-for="mode in modes" :key="mode.key" @click="setMode(mode.key)"
@@ -67,28 +67,30 @@
                         </div>
 
                         <div>
-                            <p class="text-xs font-semibold mb-2" style="color: var(--color-text-muted);">Warna Aksen
+                            <p class="mb-2 text-xs font-semibold" style="color: var(--color-text-muted);">Warna Aksen
                             </p>
                             <div class="flex flex-wrap gap-2">
                                 <button v-for="(color, index) in themeStore.presets" :key="index"
                                     @click="themeStore.setColor(index)"
-                                    class="w-7 h-7 rounded-lg transition-all hover:scale-110" :style="{
-                                        backgroundColor: color.primary,
-                                        outline: themeStore.colorPreset === index ? `3px solid ${color.primary}` : 'none',
-                                        outlineOffset: '2px'
-                                    }" :title="color.name"></button>
+                                    class="relative transition-all rounded-lg w-7 h-7 hover:scale-110"
+                                    :style="{ backgroundColor: color.primary }" :title="color.name">
+                                    <div v-if="themeStore.colorPreset === index"
+                                        class="absolute inset-0 flex items-center justify-center rounded-lg">
+                                        <Check :size="14" class="text-white" />
+                                    </div>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <button @click="themeStore.toggleTheme()" class="btn-ghost p-2 rounded-xl">
+                <button @click="themeStore.toggleTheme()" class="p-2 btn-ghost rounded-xl">
                     <Sun v-if="themeStore.isDark" :size="18" />
                     <Moon v-else :size="18" />
                 </button>
 
                 <div class="relative">
-                    <button @click="showNotif = !showNotif" class="btn-ghost p-2 rounded-xl relative">
+                    <button @click="showNotif = !showNotif" class="relative p-2 btn-ghost rounded-xl">
                         <Bell :size="18" />
                         <span v-if="lowStockCount > 0"
                             class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full text-white flex items-center justify-center"
@@ -96,19 +98,19 @@
                                 lowStockCount }}</span>
                     </button>
                     <div v-if="showNotif"
-                        class="absolute right-0 top-11 w-80 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                        class="absolute right-0 z-50 overflow-hidden shadow-2xl top-11 w-80 rounded-2xl"
                         style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
                         <div class="px-4 py-3" style="border-bottom: 1px solid var(--color-border);">
-                            <p class="font-bold text-sm" style="color: var(--color-text);">Notifikasi Stok</p>
+                            <p class="text-sm font-bold" style="color: var(--color-text);">Notifikasi Stok</p>
                         </div>
-                        <div v-if="lowStockItems.length === 0" class="p-6 text-center text-sm"
+                        <div v-if="lowStockItems.length === 0" class="p-6 text-sm text-center"
                             style="color: var(--color-text-muted);">
                             Semua stok aman.
                         </div>
-                        <div v-else class="max-h-64 overflow-y-auto">
+                        <div v-else class="overflow-y-auto max-h-64">
                             <div v-for="item in lowStockItems" :key="item.id" class="flex items-center gap-3 px-4 py-3"
                                 style="border-bottom: 1px solid var(--color-border);">
-                                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                                <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-xl"
                                     style="background-color: rgba(239,68,68,0.1);">
                                     <AlertTriangle :size="14" style="color: var(--color-danger);" />
                                 </div>
@@ -131,20 +133,20 @@
                 <div class="relative">
                     <button @click="showUserMenu = !showUserMenu"
                         class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl btn-ghost">
-                        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+                        <div class="flex items-center justify-center text-xs font-bold text-white rounded-lg w-7 h-7"
                             style="background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));">
                             {{ userInitial }}
                         </div>
-                        <div class="hidden md:block text-left">
+                        <div class="hidden text-left md:block">
                             <p class="text-xs font-bold leading-tight" style="color: var(--color-text);">{{
                                 authStore.user?.name }}</p>
-                            <p class="text-xs capitalize leading-tight" style="color: var(--color-text-muted);">{{
+                            <p class="text-xs leading-tight capitalize" style="color: var(--color-text-muted);">{{
                                 authStore.user?.role }}</p>
                         </div>
                         <ChevronDown :size="12" style="color: var(--color-text-muted);" />
                     </button>
                     <div v-if="showUserMenu"
-                        class="absolute right-0 top-11 w-44 rounded-2xl shadow-2xl z-50 overflow-hidden p-2"
+                        class="absolute right-0 z-50 p-2 overflow-hidden shadow-2xl top-11 w-44 rounded-2xl"
                         style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
                         <button @click="handleLogout"
                             class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
@@ -159,7 +161,7 @@
             </div>
         </div>
 
-        <div v-if="showMenu" class="flex items-center gap-1 px-4 h-11 overflow-x-auto">
+        <div v-if="showMenu" class="flex items-center gap-1 px-4 overflow-x-auto h-11">
             <router-link v-for="item in menuStore.menus" :key="item.id" :to="item.path"
                 class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all"
                 :class="isActive(item.path) ? 'nav-active' : 'nav-inactive'">
@@ -170,6 +172,7 @@
 
     </header>
 
+    <!-- Backdrop -->
     <div v-if="showNotif || showUserMenu || showSettings" class="fixed inset-0 z-20"
         @click="showNotif = false; showUserMenu = false; showSettings = false"></div>
 </template>
@@ -182,12 +185,13 @@ import { useThemeStore } from '@/stores/theme.store'
 import { useMenuStore } from '@/stores/menu.store'
 import { getDashboard } from '@/services/modules/reports'
 import {
-    Menu, Warehouse, Settings, Sun, Moon, Monitor,
+    Menu, Settings, Sun, Moon, Monitor, Check,
     Bell, AlertTriangle, LogOut, ChevronDown,
     LayoutDashboard, LayoutTemplate,
     Package, Layers, ShoppingCart,
     TrendingUp, BarChart2, Users, Truck,
-    FileText, Home, Box, Database, PieChart, ClipboardList
+    FileText, Home, Box, Database, PieChart,
+    ClipboardList, Warehouse
 } from 'lucide-vue-next'
 
 const props = defineProps({

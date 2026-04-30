@@ -3,59 +3,87 @@ import { defineStore } from "pinia";
 const COLOR_PRESETS = [
   {
     name: "Blue",
-    primary: "#2563eb",
-    dark: "#1d4ed8",
-    light: "#eff6ff",
-    lightDark: "#1e3a5f",
+    primary: "#066fd1",
+    dark: "#0558a8",
+    light: "#e8f3fc",
+    lightDark: "#0a2a4a",
   },
   {
-    name: "Violet",
-    primary: "#7c3aed",
-    dark: "#6d28d9",
-    light: "#f5f3ff",
-    lightDark: "#2e1065",
+    name: "Azure",
+    primary: "#4299e1",
+    dark: "#2b7dc4",
+    light: "#ebf5fb",
+    lightDark: "#0e2d45",
   },
   {
-    name: "Rose",
-    primary: "#e11d48",
-    dark: "#be123c",
-    light: "#fff1f2",
-    lightDark: "#4c0519",
+    name: "Indigo",
+    primary: "#4263eb",
+    dark: "#2f4dd4",
+    light: "#ebeffe",
+    lightDark: "#111a4a",
   },
   {
-    name: "Emerald",
-    primary: "#059669",
-    dark: "#047857",
-    light: "#ecfdf5",
-    lightDark: "#064e3b",
-  },
-  {
-    name: "Orange",
-    primary: "#ea580c",
-    dark: "#c2410c",
-    light: "#fff7ed",
-    lightDark: "#431407",
-  },
-  {
-    name: "Cyan",
-    primary: "#0891b2",
-    dark: "#0e7490",
-    light: "#ecfeff",
-    lightDark: "#164e63",
+    name: "Purple",
+    primary: "#ae3ec9",
+    dark: "#952eaf",
+    light: "#f8ecfc",
+    lightDark: "#35103d",
   },
   {
     name: "Pink",
-    primary: "#db2777",
-    dark: "#be185d",
-    light: "#fdf2f8",
-    lightDark: "#500724",
+    primary: "#d6336c",
+    dark: "#b8225a",
+    light: "#fdeef4",
+    lightDark: "#420d20",
   },
   {
-    name: "Slate",
-    primary: "#475569",
-    dark: "#334155",
-    light: "#f8fafc",
-    lightDark: "#0f172a",
+    name: "Red",
+    primary: "#d63939",
+    dark: "#b82828",
+    light: "#fdeaea",
+    lightDark: "#420d0d",
+  },
+  {
+    name: "Orange",
+    primary: "#f76707",
+    dark: "#d45300",
+    light: "#fff3e8",
+    lightDark: "#472000",
+  },
+  {
+    name: "Yellow",
+    primary: "#f59f00",
+    dark: "#d48700",
+    light: "#fff8e1",
+    lightDark: "#473000",
+  },
+  {
+    name: "Lime",
+    primary: "#74b816",
+    dark: "#5e9612",
+    light: "#f2fae3",
+    lightDark: "#1e3205",
+  },
+  {
+    name: "Green",
+    primary: "#2fb344",
+    dark: "#258f36",
+    light: "#e9faec",
+    lightDark: "#0a2e10",
+  },
+  {
+    name: "Teal",
+    primary: "#0ca678",
+    dark: "#098560",
+    light: "#e6faf5",
+    lightDark: "#032e22",
+  },
+  {
+    name: "Cyan",
+    primary: "#17a2b8",
+    dark: "#1286a0",
+    light: "#e3f7fb",
+    lightDark: "#062a32",
   },
 ];
 
@@ -93,6 +121,7 @@ export const useThemeStore = defineStore("theme", {
           if (!localStorage.getItem("wms_theme")) {
             this.isDark = e.matches;
             this.applyTheme();
+            this.applyColor();
           }
         });
     },
@@ -101,6 +130,7 @@ export const useThemeStore = defineStore("theme", {
       this.isDark = !this.isDark;
       localStorage.setItem("wms_theme", this.isDark ? "dark" : "light");
       this.applyTheme();
+      this.applyColor();
     },
 
     setLayout(layout) {
