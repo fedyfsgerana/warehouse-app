@@ -1,59 +1,84 @@
 <template>
-    <div class="flex h-screen bg-gray-100">
-        <aside class="w-64 bg-white shadow-md flex flex-col">
-            <div class="p-6 border-b">
-                <h1 class="text-xl font-bold text-primary-600">Warehouse MS</h1>
-                <p class="text-sm text-gray-500 mt-1">{{ authStore.user?.name }}</p>
-                <span class="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full capitalize">
-                    {{ authStore.user?.role }}
-                </span>
-            </div>
+    <div class="min-h-screen" style="background-color: var(--color-bg);">
 
-            <nav class="flex-1 p-4 space-y-1">
-                <router-link v-for="item in menuItems" :key="item.path" :to="item.path"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors"
-                    active-class="bg-primary-50 text-primary-600 font-medium">
-                    <span>{{ item.icon }}</span>
-                    <span>{{ item.label }}</span>
-                </router-link>
-            </nav>
-
-            <div class="p-4 border-t">
-                <button @click="handleLogout"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
-                    <span>Logout</span>
-                </button>
+        <template v-if="themeStore.layout === 'navbar'">
+            <AppNavbar :show-menu="true" />
+            <div class="flex flex-col min-h-screen" style="padding-top: calc(var(--navbar-height) + 44px);">
+                <main class="flex-1 p-6">
+                    <router-view v-slot="{ Component }">
+                        <transition name="page" mode="out-in">
+                            <component :is="Component" />
+                        </transition>
+                    </router-view>
+                </main>
+                <AppFooter />
             </div>
-        </aside>
+        </template>
 
-        <main class="flex-1 overflow-auto">
-            <div class="p-8">
-                <router-view />
+        <template v-else>
+            <AppSidebar :open="sidebarOpen" @close="sidebarOpen = false" />
+            <AppNavbar :show-menu="false" :sidebar-open="sidebarOpen" @toggle-sidebar="toggleSidebar" />
+            <div class="flex flex-col min-h-screen transition-all duration-300" :style="{
+                marginLeft: sidebarOpen && !isMobile ? 'var(--sidebar-width)' : '0',
+                paddingTop: 'var(--navbar-height)'
+            }">
+                <main class="flex-1 p-6">
+                    <router-view v-slot="{ Component }">
+                        <transition name="page" mode="out-in">
+                            <component :is="Component" />
+                        </transition>
+                    </router-view>
+                </main>
+                <AppFooter />
             </div>
-        </main>
+        </template>
+
     </div>
 </template>
 
 <script setup>
-import { useAuthStore } from '@/stores/auth.store'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useThemeStore } from '@/stores/theme.store'
+import AppSidebar from '@/components/AppSidebar.vue'
+import AppNavbar from '@/components/AppNavbar.vue'
+import AppFooter from '@/components/AppFooter.vue'
 
-const authStore = useAuthStore()
-const router = useRouter()
+const themeStore = useThemeStore()
+const sidebarOpen = ref(true)
+const isMobile = ref(false)
 
-const menuItems = [
-    { path: '/', label: 'Dashboard', icon: 'D' },
-    { path: '/products', label: 'Produk', icon: 'P' },
-    { path: '/warehouses', label: 'Gudang', icon: 'G' },
-    { path: '/stock', label: 'Stok', icon: 'S' },
-    { path: '/purchase-orders', label: 'Purchase Order', icon: 'PO' },
-    { path: '/sales-orders', label: 'Sales Order', icon: 'SO' },
-    { path: '/reports', label: 'Laporan', icon: 'L' },
-    { path: '/suppliers', label: 'Supplier', icon: 'SP' },
-]
-
-const handleLogout = async () => {
-    await authStore.logout()
-    router.push('/login')
+const checkMobile = () => {
+    isMobile.value = window.innerWidth < 768
+    sidebarOpen.value = !isMobile.value
 }
+
+const toggleSidebar = () => {
+    sidebarOpen.value = !sidebarOpen.value
+}
+
+onMounted(() => {
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', checkMobile)
+})
 </script>
+
+<style>
+.page-enter-active,
+.page-leave-active {
+    transition: all 0.18s ease;
+}
+
+.page-enter-from {
+    opacity: 0;
+    transform: translateY(6px);
+}
+
+.page-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+</style>
