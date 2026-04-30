@@ -58,7 +58,12 @@ const routes = [
         path: "users",
         name: "Users",
         component: () => import("@/pages/users/UsersPage.vue"),
-      }
+      },
+      {
+        path: "menu-manager",
+        name: "MenuManager",
+        component: () => import("@/pages/menu-manager/MenuManagerPage.vue"),
+      },
     ],
   },
   {
