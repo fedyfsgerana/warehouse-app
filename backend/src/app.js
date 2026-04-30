@@ -11,6 +11,7 @@ const purchaseOrderRoutes = require("./modules/purchase-orders/purchase-orders.r
 const salesOrderRoutes = require("./modules/sales-orders/sales-orders.routes");
 const reportRoutes = require("./modules/reports/reports.routes");
 const supplierRoutes = require("./modules/suppliers/suppliers.routes");
+const userRoutes = require("./modules/users/users.routes");
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/api/purchase-orders", purchaseOrderRoutes);
 app.use("/api/sales-orders", salesOrderRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/suppliers", supplierRoutes);
+app.use("/api/users", userRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Warehouse API is running" });
