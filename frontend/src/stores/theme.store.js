@@ -145,10 +145,13 @@ export const useThemeStore = defineStore("theme", {
     },
 
     applyTheme() {
+      const html = document.documentElement;
       if (this.isDark) {
-        document.documentElement.classList.add("dark");
+        html.classList.add("dark");
+        html.setAttribute("data-theme", "dark");
       } else {
-        document.documentElement.classList.remove("dark");
+        html.classList.remove("dark");
+        html.setAttribute("data-theme", "light");
       }
     },
 

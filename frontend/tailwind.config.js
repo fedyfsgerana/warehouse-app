@@ -8,12 +8,12 @@ export default {
         sans: ["Plus Jakarta Sans", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
+      borderRadius: {
+        xl: "12px",
+        "2xl": "16px",
+        "3xl": "20px",
+      },
     },
   },
-  plugins: [require("daisyui")],
-  daisyui: {
-    themes: false,
-    darkTheme: "dark",
-    base: false,
-  },
+  plugins: [],
 };
